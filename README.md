@@ -15,9 +15,29 @@
 
 ## 설치
 
+운영체제별로 가상환경 활성화 명령이 다릅니다.
+
+### macOS / Linux (bash, zsh)
+
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Windows PowerShell
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+### Windows CMD
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
