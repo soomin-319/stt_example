@@ -81,6 +81,7 @@ python transcribe.py sample.mp4 --device cuda --compute-type float16
 - `--compute-type`: `int8 | float16 | float32` (기본값: `int8`)
 - `--beam-size`: beam search 크기 (기본값: `5`)
 - `--no-srt`: `.srt` 파일 생성 비활성화
+- `--fallback-to-cpu`: `--device cuda` 실패 시 CPU(int8)로 자동 재시도
 
 ## 개발 시 권장 흐름
 
@@ -92,3 +93,23 @@ python transcribe.py sample.mp4 --device cuda --compute-type float16
 ## 참고
 
 - 화자 분리(diarization)는 `faster-whisper` 단독으로는 제한적이므로 별도 도구 연동이 필요할 수 있습니다.
+
+## 문제 해결 (Windows GPU)
+
+GPU 실행 시 아래와 같은 오류가 날 수 있습니다.
+
+`RuntimeError: Library cublas64_12.dll is not found or cannot be loaded`
+
+이 경우는 코드 문제라기보다 CUDA 런타임/라이브러리 로딩 문제인 경우가 대부분입니다.
+
+- 빠른 우회: CPU로 실행
+
+```powershell
+python transcribe.py sample.mp4 --device cpu --compute-type int8
+```
+
+- 자동 우회: GPU 실패 시 CPU로 자동 재시도
+
+```powershell
+python transcribe.py sample.mp4 --device cuda --compute-type float16 --fallback-to-cpu
+```

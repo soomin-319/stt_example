@@ -2,8 +2,6 @@ import argparse
 import json
 from pathlib import Path
 
-from faster_whisper import WhisperModel
-
 
 def format_timestamp(seconds: float) -> str:
     total_ms = int(round(seconds * 1000))
@@ -56,6 +54,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="SRT 파일을 생성하지 않습니다.",
     )
+    parser.add_argument(
+        "--fallback-to-cpu",
+        action="store_true",
+        help="GPU(CUDA) 실패 시 CPU(int8)로 자동 재시도합니다.",
+    )
     return parser.parse_args()
 
 
@@ -66,6 +69,8 @@ def main() -> None:
     if not input_path.exists():
         raise FileNotFoundError(f"입력 파일을 찾을 수 없습니다: {input_path}")
 
+    from faster_whisper import WhisperModel
+
     model = WhisperModel(
         args.model_size,
         device=args.device,
@@ -73,13 +78,44 @@ def main() -> None:
     )
 
     print(f"[INFO] 전사 시작: {input_path}")
-    segments, info = model.transcribe(
-        str(input_path),
-        beam_size=args.beam_size,
-        language=args.language,
-    )
-
-    segment_list = list(segments)
+    try:
+        segments, info = model.transcribe(
+            str(input_path),
+            beam_size=args.beam_size,
+            language=args.language,
+        )
+        segment_list = list(segments)
+    except RuntimeError as exc:
+        message = str(exc)
+        cuda_lib_error = any(
+            keyword in message.lower()
+            for keyword in ["cublas", "cudnn", "cuda", "dll is not found", "cannot be loaded"]
+        )
+        if args.device == "cuda" and args.fallback_to_cpu and cuda_lib_error:
+            print(
+                "[WARN] CUDA 라이브러리를 찾지 못해 GPU 전사에 실패했습니다. "
+                "CPU(int8)로 자동 재시도합니다."
+            )
+            model = WhisperModel(
+                args.model_size,
+                device="cpu",
+                compute_type="int8",
+            )
+            segments, info = model.transcribe(
+                str(input_path),
+                beam_size=args.beam_size,
+                language=args.language,
+            )
+            segment_list = list(segments)
+        else:
+            raise RuntimeError(
+                f"{message}\n\n"
+                "GPU 실행 실패로 보입니다. 아래를 확인하세요:\n"
+                "1) NVIDIA 드라이버 및 CUDA 런타임 설치 상태\n"
+                "2) Python/패키지와 CUDA 버전 호환성\n"
+                "3) 빠른 우회: --device cpu --compute-type int8\n"
+                "4) 자동 우회: --fallback-to-cpu"
+            ) from exc
 
     output_prefix = Path(args.output_prefix)
     txt_path = output_prefix.with_suffix(".txt")
