@@ -126,6 +126,46 @@ GPU 실행 시 아래와 같은 오류가 날 수 있습니다.
 
 이 경우는 코드 문제라기보다 CUDA 런타임/라이브러리 로딩 문제인 경우가 대부분입니다.
 
+### `where.exe cublas64_12.dll`, `where.exe cudnn64_9.dll` 둘 다 못 찾는 경우
+
+아래는 가장 빠른 복구 순서입니다.
+
+1. **GPU 드라이버 확인**
+
+```powershell
+nvidia-smi
+```
+
+- 명령이 실패하면 NVIDIA 드라이버를 먼저 설치/업데이트해야 합니다.
+
+2. **CUDA 12.x 설치**
+- `cublas64_12.dll`은 CUDA 12 계열 DLL입니다.
+- 설치 후 보통 아래 경로에 DLL이 생깁니다.
+  - `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.x\bin`
+
+3. **cuDNN 9 (CUDA 12용) 설치**
+- `cudnn64_9.dll`이 필요합니다.
+- 설치 방식에 따라 예시 경로가 달라질 수 있습니다.
+  - `C:\Program Files\NVIDIA\CUDNN\v9.x\bin`
+  - 또는 CUDA `bin` 아래로 복사한 경로
+
+4. **PATH 반영 확인 (새 PowerShell 창에서)**
+
+```powershell
+where.exe cublas64_12.dll
+where.exe cudnn64_9.dll
+```
+
+- 둘 다 경로가 출력되면 DLL 탐색 문제는 해결된 상태입니다.
+
+5. **GPU 전사 재실행**
+
+```powershell
+python transcribe.py sample.mp4 --device cuda --compute-type float16
+```
+
+> 팁: PATH를 수정했는데도 `where.exe`가 못 찾으면, 터미널을 완전히 종료 후 다시 실행하세요.
+
 - 빠른 우회: CPU로 실행
 
 ```powershell
