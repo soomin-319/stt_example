@@ -33,6 +33,30 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+PowerShell에서 아래 오류가 나면 실행 정책 때문에 활성화 스크립트가 차단된 상태입니다.
+
+`PSSecurityException: 이 시스템에서 스크립트를 실행할 수 없습니다`
+
+- 1회만 우회 실행(현재 터미널 세션 한정):
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+- 사용자 계정 기준으로 허용(권장, 관리자 권한 불필요):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+```
+
+정책 확인:
+
+```powershell
+Get-ExecutionPolicy -List
+```
+
 ### Windows CMD
 
 ```bat
