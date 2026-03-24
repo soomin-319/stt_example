@@ -166,6 +166,20 @@ python transcribe.py sample.mp4 --device cuda --compute-type float16
 
 > 팁: PATH를 수정했는데도 `where.exe`가 못 찾으면, 터미널을 완전히 종료 후 다시 실행하세요.
 
+### CUDA 13을 사용 중인데 GPU가 계속 실패하는 경우
+
+`faster-whisper`의 최신 `ctranslate2` 조합은 일반적으로 **CUDA 12 + cuDNN 9** 런타임을 요구합니다.  
+즉, 시스템에 CUDA 13만 깔려 있으면 `cublas64_12.dll` / `cudnn64_9.dll`을 못 찾아 GPU 실행이 실패할 수 있습니다.
+
+확인:
+
+```powershell
+where.exe cublas64_12.dll
+where.exe cudnn64_9.dll
+```
+
+둘 중 하나라도 못 찾으면 CUDA 12/cuDNN 9 런타임을 추가 설치한 뒤 다시 실행하세요.
+
 - 빠른 우회: CPU로 실행
 
 ```powershell

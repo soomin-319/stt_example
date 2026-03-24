@@ -112,9 +112,11 @@ def main() -> None:
                 f"{message}\n\n"
                 "GPU 실행 실패로 보입니다. 아래를 확인하세요:\n"
                 "1) NVIDIA 드라이버 및 CUDA 런타임 설치 상태\n"
-                "2) Python/패키지와 CUDA 버전 호환성\n"
-                "3) 빠른 우회: --device cpu --compute-type int8\n"
-                "4) 자동 우회: --fallback-to-cpu"
+                "2) faster-whisper/ctranslate2는 현재 CUDA 12 + cuDNN 9 조합이 필요할 수 있음\n"
+                "3) CUDA 13만 설치된 환경이면 CUDA 12 런타임(특히 cublas64_12.dll, cudnn64_9.dll) 추가 설치 필요\n"
+                "4) where.exe cublas64_12.dll / where.exe cudnn64_9.dll 로 DLL 탐색 가능 여부 확인\n"
+                "5) 빠른 우회: --device cpu --compute-type int8\n"
+                "6) 자동 우회: --fallback-to-cpu"
             ) from exc
 
     output_prefix = Path(args.output_prefix)
